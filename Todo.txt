@@ -1,0 +1,7 @@
+########################################################################
+2024/02/23:
+	Try finish a simplest game first. I pick 2048, one of my favourite in high school.
+	
+	Components:
+		Let's say we ignore the animation. Then the board just renew itself when key signal is triggered.
+
