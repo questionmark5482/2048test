@@ -1,4 +1,27 @@
 ########################################################################
+2024/02/27:
+	Old problems to be solved:
+		the losing condition is wrong.
+		Input separate? Signal?
+	
+	To do designs:
+		Now we want to have a separate system for visulization.
+		The board logic, and code need to be reorganized.
+		The communication between core logic and visulization need to happen. 
+		Namely, the core should send formatted signals out.  
+		
+		Order:
+			1. reorganizate code
+			2. define signal
+			3. visualize
+
+	Input -> 4 commands as output (dir)
+	try_slide(dir) -> rotate + slide_left + rotate_back + send_vis_signal
+	
+
+
+
+########################################################################
 2024/02/23:
 	Try finish a simplest game first. I pick 2048, one of my favourite in high school.
 	
