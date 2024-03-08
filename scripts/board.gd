@@ -1,6 +1,7 @@
 extends Node2D
 
 var blocks = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]]
+#var blocks = [[1,2,3,4], [0,5,0,0], [0,0,6,0], [0,0,0,7]]
 var alive = true
 var move_count = 0
 
@@ -12,6 +13,7 @@ func _ready():
 
 func initialize():
 	spawn_number()
+	pass
 	
 	
 func spawn_number():
@@ -49,19 +51,58 @@ func debug_print_board():
 	print(blocks[3])
 
 func try_slide(dir):
-	# check if possible
+	move_count += 1
+	print(" ")
+	print("Move No. " + str(move_count))
 	
 	# rotate
-	var blocks_rotated = rotate_blocks(dir)
-	# slide_left()
-	var new_blocks_rotated = slide_left(blocks)
-	# rotate back
+	var blocks_rotated = rotate_blocks(dir, blocks)
+	# check if possible to slide left
+	var is_move_legal = slide_check(blocks_rotated)
+	if is_move_legal == false:
+		print("Illegal move!")
+		blocks = rotate_blocks(dir, blocks_rotated)
+	else:
+		# slide_left()
+		var new_blocks_rotated = slide_left(blocks_rotated)
+		# rotate back
+		blocks = rotate_blocks(dir, new_blocks_rotated)
+
 	
-	blocks = new_blocks_rotated
-	pass
+	
+	if is_move_legal:
+		spawn_number()
+		game_over_check()
+	debug_print_board()
+	return
+
+func slide_check(input_block) -> bool:
+	for row in input_block:
+		# if any row is slidable, return true
+		# a row is slidable iff (0 before number) or (identical neighbor not 0)
+		# 0 before number check
+		var ind = 3
+		for jj in range(4):
+			if row[jj] == 0:
+				ind = jj
+				break
+		for kk in range(ind + 1, 4):
+			if row[kk] != 0:
+				print("found vacant in row: " + str(row) + "slidable")
+				return true
+		# identical non-zero neighbor check
+		var prev = row[0]
+		for jj in range(1, 4):
+			var cur = row[jj]
+			if cur == prev and cur != 0:
+				print("found identical neighbor in row: " + str(row) + "slidable")
+				return true
+			prev = cur
+	print("not slidable!")
+	return false
 
 func rotate_blocks(dir, input_blocks = blocks):
-	# rule: left -> no change. right -> reflection. up -> transpose. down -> transpose and inversion
+	# rule: left -> no change. right -> reflection. up -> transpose. down -> the other transpose
 	var ans = []
 	if dir == "left":
 		for ii in range(4):
@@ -85,14 +126,15 @@ func rotate_blocks(dir, input_blocks = blocks):
 		for ii in range(4):
 			var row = []
 			for jj in range(4):
-				row.append(input_blocks[jj][3 - ii])
+				row.append(input_blocks[3-jj][3-ii])
 			ans.append(row)
-	print("rotated block is: ")
-	print(ans)
+#	print("rotated block is: ")
+#	print(ans)
 #	print(ans[0])
 #	print(ans[1])
 #	print(ans[2])
 #	print(ans[3])
+	return ans
 			
 
 func slide_left(input_blocks):
@@ -124,28 +166,41 @@ func _input(event):
 	if not alive:
 		return
 	
+	var is_move_legal = false
 	if event.is_action_released("ui_left"):
-		try_slide("left")
+		is_move_legal = try_slide("left")
 	elif event.is_action_pressed("ui_right"):
-		try_slide("right")
+		is_move_legal = try_slide("right")
 	elif event.is_action_pressed("ui_up"):
-		try_slide("up")
+		is_move_legal = try_slide("up")
 	elif event.is_action_pressed("ui_down"):
-		try_slide("down")
+		is_move_legal = try_slide("down")
 	elif event.is_action_pressed("test_input"):
-		var test_blocks = [[1,2,3,4], [0,5,0,0], [0,0,6,0], [0,0,0,7]]
-		print(rotate_blocks("left", test_blocks))
-		print(rotate_blocks("right", test_blocks))
-		print(rotate_blocks("up", test_blocks))
-		print(rotate_blocks("dosn", test_blocks))
+		pass
 	else:
 		return
-	move_count += 1
-	print("Move No. " + str(move_count))
-	spawn_number()
-	debug_print_board()
+	
+
 
 
 func game_over_check():
+	print("checking gameover")
+	# game over iff no zero and no identical neighbor
+	for ii in range(4):
+		for jj in range(4):
+			if blocks[ii][jj] == 0:
+				print("detected 0, still alive")
+				return
+			# check identical neighbor
+			for dd in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
+				var iii = ii + dd[0]
+				var jjj = jj + dd[1]
+				if iii < 0 or iii > 3 or jjj < 0 or jjj > 3:
+					continue
+				if blocks[iii][jjj] == blocks[ii][jj] and blocks[ii][jj] != 0:
+					print("detected identical neighbor, still alive")
+					return
+				
 	print("Game Over!")
-	# alive = false
+	alive = false
+	return
