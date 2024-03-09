@@ -1,7 +1,12 @@
 ########################################################################
 2024/03/08:
+	I guess the core logic is finished. Next step is to send out signals
+	about how the number should move.
 
-
+	I guess the function slide_left and spawn_number should send out signal.
+	
+	each block should have method move_to(ii, jj)
+	
 ########################################################################
 2024/02/27:
 	Old problems to be solved:

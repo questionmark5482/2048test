@@ -43,12 +43,7 @@ func spawn_number():
 	pass
 
 
-func debug_print_board():
-	print("Printing from board.gd: ")
-	print(blocks[0])
-	print(blocks[1])
-	print(blocks[2])
-	print(blocks[3])
+
 
 func try_slide(dir):
 	move_count += 1
@@ -135,7 +130,6 @@ func rotate_blocks(dir, input_blocks = blocks):
 #	print(ans[2])
 #	print(ans[3])
 	return ans
-			
 
 func slide_left(input_blocks):
 	var new_blocks = []
@@ -162,27 +156,6 @@ func slide_left(input_blocks):
 		new_blocks.append(new_row)
 	return new_blocks
 	
-func _input(event):
-	if not alive:
-		return
-	
-	var is_move_legal = false
-	if event.is_action_released("ui_left"):
-		is_move_legal = try_slide("left")
-	elif event.is_action_pressed("ui_right"):
-		is_move_legal = try_slide("right")
-	elif event.is_action_pressed("ui_up"):
-		is_move_legal = try_slide("up")
-	elif event.is_action_pressed("ui_down"):
-		is_move_legal = try_slide("down")
-	elif event.is_action_pressed("test_input"):
-		pass
-	else:
-		return
-	
-
-
-
 func game_over_check():
 	print("checking gameover")
 	# game over iff no zero and no identical neighbor
@@ -203,4 +176,32 @@ func game_over_check():
 				
 	print("Game Over!")
 	alive = false
-	return
+	return	
+	
+
+
+
+func _input(event):
+	if not alive:
+		return
+	
+	var is_move_legal = false
+	if event.is_action_released("ui_left"):
+		is_move_legal = try_slide("left")
+	elif event.is_action_pressed("ui_right"):
+		is_move_legal = try_slide("right")
+	elif event.is_action_pressed("ui_up"):
+		is_move_legal = try_slide("up")
+	elif event.is_action_pressed("ui_down"):
+		is_move_legal = try_slide("down")
+	elif event.is_action_pressed("test_input"):
+		pass
+	else:
+		return
+
+func debug_print_board():
+	print("Printing from board.gd: ")
+	print(blocks[0])
+	print(blocks[1])
+	print(blocks[2])
+	print(blocks[3])
