@@ -1,0 +1,18 @@
+[gd_scene load_steps=5 format=3 uid="uid://bq3mdmc7u45rt"]
+
+[ext_resource type="Script" path="res://scripts/GameManager.gd" id="1_r23ba"]
+[ext_resource type="Texture2D" uid="uid://cvgjwl3hjpohr" path="res://Materials/board.png" id="2_u0gwg"]
+[ext_resource type="Script" path="res://scripts/Board.gd" id="3_lxim2"]
+[ext_resource type="Script" path="res://scripts/Camera.gd" id="4_hpufi"]
+
+[node name="GameManager" type="Node2D"]
+script = ExtResource("1_r23ba")
+
+[node name="Board" type="Sprite2D" parent="."]
+scale = Vector2(2, 2)
+texture = ExtResource("2_u0gwg")
+script = ExtResource("3_lxim2")
+
+[node name="Camera" type="Camera2D" parent="."]
+zoom = Vector2(0.5, 0.5)
+script = ExtResource("4_hpufi")
