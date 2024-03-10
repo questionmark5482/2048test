@@ -6,6 +6,10 @@ var alive = true
 var move_count = 0
 var board
 
+# signals:
+signal send_instruction(instructions) # Form: ["move", [i,j], [ii,jj]] or ["spawn", [i,j], num]
+signal move_blocks
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	initialize()
@@ -20,6 +24,7 @@ func initialize():
 	
 	
 func spawn_number():
+	var temp_signal = []
 	var temp = []
 	for ii in range(4):
 		for jj in range(4):
@@ -36,6 +41,7 @@ func spawn_number():
 		var ii = temp[r1][0]
 		var jj = temp[r1][1]
 		blocks[ii][jj] = 4
+		temp_signal.append(["spawn", [ii, jj], 4])
 	else:
 		var i1 = temp[r1][0]
 		var j1 = temp[r1][1]
@@ -43,9 +49,11 @@ func spawn_number():
 		var j2 = temp[r2][1]
 		blocks[i1][j1] = 2
 		blocks[i2][j2] = 2
+		temp_signal.append(["spawn", [i1, j1], 2])
+		temp_signal.append(["spawn", [i2, j2], 2])
+	print(temp_signal)
+	send_instruction.emit(temp_signal)
 	pass
-
-
 
 
 func try_slide(dir):
@@ -62,7 +70,7 @@ func try_slide(dir):
 		blocks = rotate_blocks(dir, blocks_rotated)
 	else:
 		# slide_left()
-		var new_blocks_rotated = slide_left(blocks_rotated)
+		var new_blocks_rotated = slide_left(blocks_rotated, dir)
 		# rotate back
 		blocks = rotate_blocks(dir, new_blocks_rotated)
 	if is_move_legal:
@@ -84,17 +92,17 @@ func slide_check(input_block) -> bool:
 				break
 		for kk in range(ind + 1, 4):
 			if row[kk] != 0:
-				print("found vacant in row: " + str(row) + "slidable")
+#				print("found vacant in row: " + str(row) + "slidable")
 				return true
 		# identical non-zero neighbor check
 		var prev = row[0]
 		for jj in range(1, 4):
 			var cur = row[jj]
 			if cur == prev and cur != 0:
-				print("found identical neighbor in row: " + str(row) + "slidable")
+#				print("found identical neighbor in row: " + str(row) + "slidable")
 				return true
 			prev = cur
-	print("not slidable!")
+#	print("not slidable!")
 	return false
 
 func rotate_blocks(dir, input_blocks = blocks):
@@ -126,31 +134,76 @@ func rotate_blocks(dir, input_blocks = blocks):
 			ans.append(row)
 	return ans
 
-func slide_left(input_blocks):
+func slide_left(input_blocks, dir):
+	var block_signals = []
 	var new_blocks = []
 	for row_index in range(4):
 		var row = input_blocks[row_index]
-		var non_zeros = []
-		for num in row:
-			if num != 0:
-				non_zeros.append(num)
-		# convert non_zeros into new_row. 
-		var new_row = []
-		while non_zeros:
-			var a = non_zeros.pop_front()
-			if non_zeros == []:
-				new_row.append(a)
-				break
-			if non_zeros[0] == a:
-				non_zeros.pop_front()
-				new_row.append(a*2)
+		# from row generate new row.
+#		var non_zeros = []
+#		for num in row:
+#			if num != 0:
+#				non_zeros.append(num)
+#		# convert non_zeros into new_row. 
+#		var new_row = []
+#		while non_zeros:
+#			var a = non_zeros.pop_front()
+#			if non_zeros == []:
+#				new_row.append(a)
+#				break
+#			if non_zeros[0] == a:
+#				non_zeros.pop_front()
+#				new_row.append(a*2)
+#			else:
+#				new_row.append(a)
+#		for ii in range(4 - len(new_row)):
+#			new_row.append(0)
+		var merged = true
+		var new_row = [0, 0, 0, 0]
+		var new_ind = 0
+		for jj in range(4):
+			if row[jj] == 0:
+				continue
+			if not merged:
+				if new_row[new_ind-1] == row[jj]:
+					# merge
+					new_row[new_ind-1] *= 2
+					merged = true
+					var temp_signal = ["merge", [row_index, jj], [row_index, new_ind-1]]
+					block_signals.append(translate_signal(temp_signal, dir))
+				else:
+					#slide
+					new_row[new_ind] = row[jj]
+					var temp_signal = ["move", [row_index, jj], [row_index, new_ind]]
+					block_signals.append(translate_signal(temp_signal, dir))
+					new_ind += 1
 			else:
-				new_row.append(a)
-		for ii in range(4 - len(new_row)):
-			new_row.append(0)
+				# slide
+				new_row[new_ind] = row[jj]
+				var temp_signal = ["move", [row_index, jj], [row_index, new_ind]]
+				block_signals.append(translate_signal(temp_signal, dir))
+				new_ind += 1
+				merged = false
 		new_blocks.append(new_row)
+	print(block_signals)
+	send_instruction.emit(block_signals)
 	return new_blocks
-	
+
+func translate_signal(input_signal, dir):
+	if input_signal[0] == "move" or input_signal[0] == "merge":
+		var ii = input_signal[1][0]
+		var jj = input_signal[1][1]
+		var iii = input_signal[2][0]
+		var jjj = input_signal[2][1]
+		if dir == "left":
+			return input_signal
+		elif dir == "right":
+			return [input_signal[0], [ii, 3-jj], [iii, 3-jjj]]
+		elif dir == "up":
+			return [input_signal[0], [jj, ii], [jjj, iii]]
+		elif dir == "down":
+			return [input_signal[0], [3-jj, 3-ii], [3-jjj, 3-iii]]
+
 func game_over_check():
 	print("checking gameover")
 	# game over iff no zero and no identical neighbor
