@@ -109,12 +109,12 @@ func merge_block(ii, jj, iii, jjj):
 #		print("checking block: (" + str(block.row_ind) + ", " + str(block.col_ind) + ")")
 		if block.row_ind == ii and block.col_ind == jj:
 #			print("found block to purge")
-			block.move_to(block_vectors[iii][jjj])
+			block.merge_to(block_vectors[iii][jjj])
 			# then destroy block!
 			# remove from active
 			active_blocks.remove_at(b_ind)
 			# queue free
-			block.queue_free()
+#			block.queue_free()
 			return
 
 func debug_print_active():
