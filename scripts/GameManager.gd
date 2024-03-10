@@ -15,7 +15,8 @@ func _ready():
 	initialize()
 	debug_print_board()
 	board = get_node("Board")
-	board.test_show_numbers()
+#	board.test_show_numbers()
+	move_blocks.emit()
 
 
 func initialize():
@@ -51,7 +52,7 @@ func spawn_number():
 		blocks[i2][j2] = 2
 		temp_signal.append(["spawn", [i1, j1], 2])
 		temp_signal.append(["spawn", [i2, j2], 2])
-	print(temp_signal)
+#	print(temp_signal)
 	send_instruction.emit(temp_signal)
 	pass
 
@@ -77,7 +78,7 @@ func try_slide(dir):
 		spawn_number()
 		game_over_check()
 	debug_print_board()
-	board.test_show_numbers()
+	move_blocks.emit()
 	return
 
 func slide_check(input_block) -> bool:

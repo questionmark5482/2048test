@@ -2,7 +2,7 @@ extends Node2D
 var block_vectors = []
 var game_manager
 var block_scene = preload("res://Scenes/Block.tscn")
-var active_blocks = [[],[],[],[]]
+var active_blocks = []
 
 var instruction_list = []
 
@@ -14,18 +14,20 @@ func _ready():
 	var x_coordinates = [0*block_distance, 1*block_distance, 2*block_distance, 3*block_distance] 
 	var y_coordinates = [0*block_distance, 1*block_distance, 2*block_distance, 3*block_distance]
 	for ii in range(4):
+		var block_vectors_row = []
 		for jj in range(4):
 			var cur_vec = Vector2(x_coordinates[jj], -y_coordinates[3-ii]) + block_shift
-			block_vectors.append(cur_vec)
-			var cur_block = block_scene.instantiate()
-			add_child(cur_block)
-			active_blocks[ii].append(cur_block)
-			cur_block.position = cur_vec
-			cur_block.refresh(0)
-			cur_block.row_ind = ii
-			cur_block.col_ind = jj
-			cur_block.debug_show()
+			block_vectors_row.append(cur_vec)
+#			var cur_block = block_scene.instantiate()
+#			add_child(cur_block)
+#			active_blocks.append(cur_block)
+#			cur_block.position = cur_vec
+#			cur_block.refresh(0)
+#			cur_block.row_ind = ii
+#			cur_block.col_ind = jj
+		block_vectors.append(block_vectors_row)
 	game_manager = get_parent()
+#	print(block_vectors)
 	# we should also draw lines between blocks.
 	
 	# signals
@@ -38,18 +40,84 @@ func _process(delta):
 
 func test_show_numbers():
 	var temp_b = game_manager.blocks
-	for ii in range(4):
-		for jj in range(4):
-			active_blocks[ii][jj].refresh(temp_b[ii][jj])
-#	for cur_block in active_blocks:
-#		print("aaaa")
-#		print(cur_block.row_ind)
-#		print(cur_block.col_ind)
-#		cur_block.refresh(temp_b[cur_block.row_ind][cur_block.col_ind])
+#	for ii in range(4):
+#		for jj in range(4):
+#			active_blocks[ii][jj].refresh(temp_b[ii][jj])
+	for cur_block in active_blocks:
+		cur_block.refresh(temp_b[cur_block.row_ind][cur_block.col_ind])
 	pass
 
 func _on_instructed(instructions):
-	pass
+	if len(instructions) == 0:
+		return
+	instruction_list.append_array(instructions)
+
+
 
 func _on_move_blocks():
+#	print(instruction_list)
+	for instruction in instruction_list:
+		execute_instruction(instruction)
+	instruction_list = []
+#	debug_print_active()
 	pass
+
+func execute_instruction(input_instruction):
+#	print("Executing instruction: " + str(input_instruction))
+	var ii = input_instruction[1][0]
+	var jj = input_instruction[1][1]
+	if input_instruction[0] == "spawn":
+		spawn_block(ii, jj, input_instruction[2])
+		
+	else:
+		var iii = input_instruction[2][0]
+		var jjj = input_instruction[2][1]
+		if input_instruction[0] == "move":
+			move_block(ii, jj, iii, jjj)
+		elif input_instruction[0] == "merge":
+			merge_block(ii, jj, iii, jjj)
+
+
+func spawn_block(ii, jj, num):
+	var cur_vec = block_vectors[ii][jj]
+	var cur_block = block_scene.instantiate()
+	add_child(cur_block)
+	active_blocks.append(cur_block)
+	cur_block.position = cur_vec
+	cur_block.refresh(num)
+	cur_block.row_ind = ii
+	cur_block.col_ind = jj
+
+func move_block(ii, jj, iii, jjj):
+	for block in active_blocks:
+		if block.row_ind == ii and block.col_ind == jj:
+			block.move_to(block_vectors[iii][jjj])
+			block.row_ind = iii
+			block.col_ind = jjj
+			return
+
+func merge_block(ii, jj, iii, jjj):
+	# refresh the value
+	for b_ind in range(len(active_blocks)):
+		var block = active_blocks[b_ind]
+		if block.row_ind == iii and block.col_ind == jjj:
+			block.refresh(game_manager.blocks[iii][jjj])
+			break
+	# move and destroy		
+	for b_ind in range(len(active_blocks)):
+		var block = active_blocks[b_ind]
+#		print("checking block: (" + str(block.row_ind) + ", " + str(block.col_ind) + ")")
+		if block.row_ind == ii and block.col_ind == jj:
+#			print("found block to purge")
+			block.move_to(block_vectors[iii][jjj])
+			# then destroy block!
+			# remove from active
+			active_blocks.remove_at(b_ind)
+			# queue free
+			block.queue_free()
+			return
+
+func debug_print_active():
+	print("active blocks are:")
+	for b in active_blocks:
+		b.debug_show()
