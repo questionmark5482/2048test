@@ -18,16 +18,10 @@ func _ready():
 		for jj in range(4):
 			var cur_vec = Vector2(x_coordinates[jj], -y_coordinates[3-ii]) + block_shift
 			block_vectors_row.append(cur_vec)
-#			var cur_block = block_scene.instantiate()
-#			add_child(cur_block)
-#			active_blocks.append(cur_block)
-#			cur_block.position = cur_vec
-#			cur_block.refresh(0)
-#			cur_block.row_ind = ii
-#			cur_block.col_ind = jj
 		block_vectors.append(block_vectors_row)
+		
+	# nodes
 	game_manager = get_parent()
-#	print(block_vectors)
 	# we should also draw lines between blocks.
 	
 	# signals
@@ -38,14 +32,6 @@ func _ready():
 func _process(delta):
 	pass
 
-func test_show_numbers():
-	var temp_b = game_manager.blocks
-#	for ii in range(4):
-#		for jj in range(4):
-#			active_blocks[ii][jj].refresh(temp_b[ii][jj])
-	for cur_block in active_blocks:
-		cur_block.refresh(temp_b[cur_block.row_ind][cur_block.col_ind])
-	pass
 
 func _on_instructed(instructions):
 	if len(instructions) == 0:
@@ -53,13 +39,10 @@ func _on_instructed(instructions):
 	instruction_list.append_array(instructions)
 
 
-
 func _on_move_blocks():
-#	print(instruction_list)
 	for instruction in instruction_list:
 		execute_instruction(instruction)
 	instruction_list = []
-#	debug_print_active()
 	pass
 
 func execute_instruction(input_instruction):

@@ -1,63 +1,50 @@
 extends Node2D
 
 var blocks = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]]
-#var blocks = [[1,2,3,4], [0,5,0,0], [0,0,6,0], [0,0,0,7]]
 var alive = true
 var move_count = 0
 var board
 
 # signals:
-signal send_instruction(instructions) # Form: ["move", [i,j], [ii,jj]] or ["spawn", [i,j], num]
+signal send_instruction(instructions) # Form: ["move", [i,j], [ii,jj]], ["merge", [i,j], [ii,jj]], or ["spawn", [i,j], num]
 signal move_blocks
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	initialize()
+	spawn_number()
 	debug_print_board()
 	board = get_node("Board")
-#	board.test_show_numbers()
 	move_blocks.emit()
-
-
-func initialize():
-	spawn_number()
-	pass
 	
 	
 func spawn_number():
-	var temp_signal = []
-	var temp = []
+	var spawn_signal = []
+	var vacants = []
 	for ii in range(4):
 		for jj in range(4):
-			var num = blocks[ii][jj]
-			if num == 0:
-				temp.append([ii, jj])
-	var l = len(temp)
-	if l == 0:
-		game_over_check()
-		return
+			if blocks[ii][jj] == 0:
+				vacants.append([ii, jj])
+	var l = len(vacants)
 	var r1 = randi_range(0, l-1)
 	var r2 = randi_range(0, l-1)
 	if r1 == r2:
-		var ii = temp[r1][0]
-		var jj = temp[r1][1]
+		var ii = vacants[r1][0]
+		var jj = vacants[r1][1]
 		blocks[ii][jj] = 4
-		temp_signal.append(["spawn", [ii, jj], 4])
+		spawn_signal.append(["spawn", [ii, jj], 4])
 	else:
-		var i1 = temp[r1][0]
-		var j1 = temp[r1][1]
-		var i2 = temp[r2][0]
-		var j2 = temp[r2][1]
+		var i1 = vacants[r1][0]
+		var j1 = vacants[r1][1]
+		var i2 = vacants[r2][0]
+		var j2 = vacants[r2][1]
 		blocks[i1][j1] = 2
 		blocks[i2][j2] = 2
-		temp_signal.append(["spawn", [i1, j1], 2])
-		temp_signal.append(["spawn", [i2, j2], 2])
-#	print(temp_signal)
-	send_instruction.emit(temp_signal)
-	pass
-
+		spawn_signal.append(["spawn", [i1, j1], 2])
+		spawn_signal.append(["spawn", [i2, j2], 2])
+	send_instruction.emit(spawn_signal)
 
 func try_slide(dir):
+	# Key function after each input
 	move_count += 1
 	print(" ")
 	print("Move No. " + str(move_count))
@@ -74,11 +61,10 @@ func try_slide(dir):
 		var new_blocks_rotated = slide_left(blocks_rotated, dir)
 		# rotate back
 		blocks = rotate_blocks(dir, new_blocks_rotated)
-	if is_move_legal:
 		spawn_number()
 		game_over_check()
+		move_blocks.emit()
 	debug_print_board()
-	move_blocks.emit()
 	return
 
 func slide_check(input_block) -> bool:
@@ -90,7 +76,7 @@ func slide_check(input_block) -> bool:
 		for jj in range(4):
 			if row[jj] == 0:
 				ind = jj
-				break
+				break            # find the left most zero
 		for kk in range(ind + 1, 4):
 			if row[kk] != 0:
 #				print("found vacant in row: " + str(row) + "slidable")
@@ -136,29 +122,11 @@ func rotate_blocks(dir, input_blocks = blocks):
 	return ans
 
 func slide_left(input_blocks, dir):
-	var block_signals = []
+	var move_merge_signals = []
 	var new_blocks = []
 	for row_index in range(4):
 		var row = input_blocks[row_index]
 		# from row generate new row.
-#		var non_zeros = []
-#		for num in row:
-#			if num != 0:
-#				non_zeros.append(num)
-#		# convert non_zeros into new_row. 
-#		var new_row = []
-#		while non_zeros:
-#			var a = non_zeros.pop_front()
-#			if non_zeros == []:
-#				new_row.append(a)
-#				break
-#			if non_zeros[0] == a:
-#				non_zeros.pop_front()
-#				new_row.append(a*2)
-#			else:
-#				new_row.append(a)
-#		for ii in range(4 - len(new_row)):
-#			new_row.append(0)
 		var merged = true
 		var new_row = [0, 0, 0, 0]
 		var new_ind = 0
@@ -171,23 +139,23 @@ func slide_left(input_blocks, dir):
 					new_row[new_ind-1] *= 2
 					merged = true
 					var temp_signal = ["merge", [row_index, jj], [row_index, new_ind-1]]
-					block_signals.append(translate_signal(temp_signal, dir))
+					move_merge_signals.append(translate_signal(temp_signal, dir))
 				else:
 					#slide
 					new_row[new_ind] = row[jj]
 					var temp_signal = ["move", [row_index, jj], [row_index, new_ind]]
-					block_signals.append(translate_signal(temp_signal, dir))
+					move_merge_signals.append(translate_signal(temp_signal, dir))
 					new_ind += 1
 			else:
 				# slide
 				new_row[new_ind] = row[jj]
 				var temp_signal = ["move", [row_index, jj], [row_index, new_ind]]
-				block_signals.append(translate_signal(temp_signal, dir))
+				move_merge_signals.append(translate_signal(temp_signal, dir))
 				new_ind += 1
 				merged = false
 		new_blocks.append(new_row)
-	print(block_signals)
-	send_instruction.emit(block_signals)
+#	print(move_merge_signals)
+	send_instruction.emit(move_merge_signals)
 	return new_blocks
 
 func translate_signal(input_signal, dir):
@@ -228,12 +196,9 @@ func game_over_check():
 	return	
 	
 
-
-
 func _input(event):
 	if not alive:
 		return
-	
 	if event.is_action_released("ui_left"):
 		try_slide("left")
 	elif event.is_action_pressed("ui_right"):
