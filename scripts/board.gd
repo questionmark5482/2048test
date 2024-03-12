@@ -67,9 +67,9 @@ func spawn_block(ii, jj, num):
 	add_child(cur_block)
 	active_blocks.append(cur_block)
 	cur_block.position = cur_vec
-	cur_block.refresh(num)
 	cur_block.row_ind = ii
 	cur_block.col_ind = jj
+	cur_block.set_up()
 
 func move_block(ii, jj, iii, jjj):
 	for block in active_blocks:
@@ -80,12 +80,12 @@ func move_block(ii, jj, iii, jjj):
 			return
 
 func merge_block(ii, jj, iii, jjj):
-	# refresh the value
-	for b_ind in range(len(active_blocks)):
-		var block = active_blocks[b_ind]
-		if block.row_ind == iii and block.col_ind == jjj:
-			block.refresh(game_manager.blocks[iii][jjj])
-			break
+#	# refresh the value
+#	for b_ind in range(len(active_blocks)):
+#		var block = active_blocks[b_ind]
+#		if block.row_ind == iii and block.col_ind == jjj:
+#			block.refresh(game_manager.blocks[iii][jjj])
+#			break
 	# move and destroy		
 	for b_ind in range(len(active_blocks)):
 		var block = active_blocks[b_ind]

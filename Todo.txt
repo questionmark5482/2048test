@@ -7,6 +7,11 @@
 
 	If the above work can be finished in several days, I can put it on itch.io and my resume, which may greatly increase the chance of finding software developing job!
 
+	The refreshing function of block should not appear in board?
+	We can let refresh happen every time the block is moved. 
+	
+	
+	Finished the stressing when two blocks merge.
 
 ########################################################################
 2024/03/08:
