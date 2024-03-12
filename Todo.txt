@@ -1,4 +1,14 @@
 ########################################################################
+2024/03/12:
+	Last weekend implement the moving feature, spent quite some hours. Yesterday I rearrange the code in GameManager and Board.
+	The code in block still requires fixing. Especially, the function move and handle_move maybe should be merged together. And we need a separate function for merge.
+	
+	Next thing to do is the different appearance of block with its different value. The size change of the lable for large number. The menu and artwork. 
+
+	If the above work can be finished in several days, I can put it on itch.io and my resume, which may greatly increase the chance of finding software developing job!
+
+
+########################################################################
 2024/03/08:
 	I guess the core logic is finished. Next step is to send out signals
 	about how the number should move.

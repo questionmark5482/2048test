@@ -16,6 +16,7 @@ var spawn_duration = 0.1
 var spawned_time
 var normal_scale = Vector2(5, 5)
 var in_scale = false
+var spawn_wait_time = 0.075
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -26,30 +27,24 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	if not in_scale:
-		var cur_time = Time.get_unix_time_from_system() - spawned_time
-		scale = normal_scale * (cur_time/spawn_duration)
-		if cur_time >= spawn_duration:
-			scale = normal_scale
-			in_scale = true
-		
+		handle_spawn_scaling()
 	if moving:
-		move_cur_time += delta
-		position = old_position + move_lambda(move_cur_time) * (destination - old_position)
-		if move_cur_time >= move_tot_time:
-			if to_be_destroyed:
-				queue_free()
-			position = destination
-			moving = false
+		handle_move(delta)
 
 
+		
 func move_to(input_destination: Vector2):
-#	position = input_destination
 	destination = input_destination
 	old_position = position
 	moving = true
 #	move_start_time = Time.get_unix_time_from_system()
-	pass
 
+	
+func merge_to(input_destination: Vector2):
+	move_to(input_destination)
+	to_be_destroyed = true
+
+	
 func refresh(n):
 	num = n
 	if n != 0:
@@ -58,14 +53,29 @@ func refresh(n):
 	else:
 		num_label.text = " "
 		visible = false
-	
+
+
 func move_lambda(t):
 	return t/move_tot_time
 
 func debug_show():
 	print("Block (" + str(row_ind) + ", " + str(col_ind) + "), value is " + str(num))
 
-func merge_to(input_destination: Vector2):
-	move_to(input_destination)
-	to_be_destroyed = true
-	pass
+
+
+func handle_spawn_scaling():
+	var cur_time = Time.get_unix_time_from_system() - spawned_time
+	scale = normal_scale * max((cur_time-spawn_wait_time)/spawn_duration, 0)
+	if cur_time-spawn_wait_time >= spawn_duration:
+		scale = normal_scale
+		in_scale = true
+		
+func handle_move(delta):
+	move_cur_time += delta
+	position = old_position + move_lambda(move_cur_time) * (destination - old_position)
+	if move_cur_time >= move_tot_time:
+		move_cur_time = 0
+		if to_be_destroyed:
+			queue_free()
+		position = destination
+		moving = false

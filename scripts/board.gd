@@ -96,8 +96,6 @@ func merge_block(ii, jj, iii, jjj):
 			# then destroy block!
 			# remove from active
 			active_blocks.remove_at(b_ind)
-			# queue free
-#			block.queue_free()
 			return
 
 func debug_print_active():
