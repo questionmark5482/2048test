@@ -208,6 +208,9 @@ func _input(event):
 	elif event.is_action_pressed("ui_down"):
 		try_slide("down")
 	elif event.is_action_pressed("test_input"):
+		blocks[0][0] = 2048
+		send_instruction.emit([["spawn", [0, 0], 2048]])
+		move_blocks.emit()
 		pass
 	else:
 		return

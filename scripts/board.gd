@@ -47,6 +47,8 @@ func _on_move_blocks():
 
 func execute_instruction(input_instruction):
 #	print("Executing instruction: " + str(input_instruction))
+	if not input_instruction:
+		return
 	var ii = input_instruction[1][0]
 	var jj = input_instruction[1][1]
 	if input_instruction[0] == "spawn":

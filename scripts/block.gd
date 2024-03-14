@@ -38,6 +38,7 @@ func _ready():
 	num_label = get_node("num_label")
 	spawned_time = Time.get_unix_time_from_system()
 	
+	
 	# get nodes
 	board = get_parent()
 
@@ -102,7 +103,7 @@ func handle_stress_scaling(begin_time):
 	var tt = cur_time/stress_duration
 	var cur_factor = min(2*tt, 2 - 2*tt) * stress_factor
 	scale = normal_scale * (1 + cur_factor)
-	print(cur_factor)
+#	print(cur_factor)
 	if cur_time >= stress_duration:
 		scale = normal_scale
 		stress_scaling = false

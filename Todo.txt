@@ -1,4 +1,13 @@
 ########################################################################
+2024/03/13:
+	Finishing: Color, Font, Menu, and Sound.
+	It's easy to fix color and font size. Just make a separate sprite for each number value.
+
+
+
+
+
+########################################################################
 2024/03/12:
 	Last weekend implement the moving feature, spent quite some hours. Yesterday I rearrange the code in GameManager and Board.
 	The code in block still requires fixing. Especially, the function move and handle_move maybe should be merged together. And we need a separate function for merge.
